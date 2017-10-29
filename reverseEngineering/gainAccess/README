@@ -1,0 +1,14 @@
+Access is an assignment from a reverse engineering class I'm taking. We were
+given a binary that authenticates users to gain access to a turnstile and 
+tasked with locating a backdoor the creators of the software made. This readme
+will serve as my notes for completing this assignment.
+
+I'll be using IDA and other standard tools during this assignment.
+
+Start
+-----
+-attempted to run the binary, ran into missing library and "Error: Cannot open
+password file." ...okay... tried again with args, no change.
+
+-ran strings on the binary, nothing too exciting. Notice that the error 
+message is a string within the binary. 
