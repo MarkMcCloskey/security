@@ -11,4 +11,46 @@ Start
 password file." ...okay... tried again with args, no change.
 
 -ran strings on the binary, nothing too exciting. Notice that the error 
-message is a string within the binary. 
+message is a string within the binary.
+
+Reversing
+---------
+
+Main Function:
+    Expects passwd file in /home/etc/ <-- well played. Move it there, program
+                                          now runs to UN PASS prompt.
+    Register a signal handler for SIGINT.
+    Get terminal properties in termios struct.
+    Prompt for username
+    check for ctrl+c barf if found
+    prompt for password
+    check for ctrl+c
+    Call "validate credentials"
+    Free variables
+    end 
+
+Signal Handler:
+    re-register same signal and handler
+    increment some counter <-- probably backdoor
+    
+
+Validate Credentials:
+    Open passwd file
+    Get a line from it
+    Read in a username:password from passwd file
+        Compare file username against typed one.
+            If the same encrypt typed password see if matches file one.
+                If so, valid UN/password unlock turnstile.
+            else check to see if password matches "%s\t\t%s" and the backdoor 
+                counter == 3. If so, unlock turnstile. Backdoor'ed.
+            else get another line from the file and try again.
+   No more lines? access denied.
+
+End
+---
+To backdoor this binary you need to enter a valid username from the passwd
+file, I used jsun, and for the password I found I needed to enter: 
+        [ctrl+c][ctrl+c][ctrl+c]%s[ctrl+v][ctrl+v]%s[enter]
+and I got the access granted statement "Thank you. Turnstile unlocked please
+enter the building."
+
