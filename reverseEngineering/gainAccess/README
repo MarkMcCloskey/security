@@ -50,7 +50,7 @@ End
 ---
 To backdoor this binary you need to enter a valid username from the passwd
 file, I used jsun, and for the password I found I needed to enter: 
-        [ctrl+c][ctrl+c][ctrl+c]%s[ctrl+v][ctrl+v]%s[enter]
+        [ctrl+c][ctrl+c][ctrl+c][%s][ctrl+v][tab][ctrl+v][tab][%s][enter]
 and I got the access granted statement "Thank you. Turnstile unlocked please
 enter the building."
 
