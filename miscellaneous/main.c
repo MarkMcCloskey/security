@@ -14,14 +14,18 @@ int main(int argc, char *argv[]){
 	char *binaryName;	
 	ElfDetails *deets;
 
-	binaryName = parseCommandLine(&argc, argv);
-	printf("Binary name: %s\n", binaryName);
+	//binaryName = parseCommandLine(&argc, argv);
+	//printf("Binary name: %s\n", binaryName);
 	
-	deets = parseElf(binaryName);
-	deets->md5Hash = 0;
-	deets->md5Hash = hash(deets->textData, (unsigned long)deets->sizeOfTextSection);
+	getUsername();
+	getPassword();
+	validateUsernamePassword();
+
+	//deets = parseElf(binaryName);
+	//deets->md5Hash = 0;
+	//deets->md5Hash = hash(deets->textData, (unsigned long)deets->sizeOfTextSection);
 	
-	destroyElfDetails(deets);
+	//destroyElfDetails(deets);
 	
 	return 0;
 }
