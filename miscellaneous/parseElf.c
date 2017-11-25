@@ -27,9 +27,11 @@ ElfDetails *parseElf(char *binName){
 	Debug("%s\n",binName);	
 	GElf_Ehdr header;
 	Elf *e = NULL;
+	Elf_Scn *text = NULL, *dynStr = NULL, *dynSym = NULL 
+		, *relPlt = NULL, *plt = NULL;
 	Elf_Data *textSectionData = NULL, *dynamicStringData = NULL
 		, *dynamicSymbolData = NULL, *relPltData = NULL
-		, *plt = NULL;	
+		, *pltData = NULL;	
 	uint64_t dynStrSize = 0, dynSymSize = 0, relPltSize = 0, pltSize = 0;
 	void *dynStrAddr = 0, *dynSymAddr = 0, *relPltAddr = 0, *pltAddr = 0;
 	int fd;
@@ -73,48 +75,59 @@ ElfDetails *parseElf(char *binName){
 	}else{
 		Debug("Got ELF header.\n");
 	}
-
-	if ((textSectionData = getSectionData(e ,".text")) == NULL){
+	
+	if ((text = getSection(e,".text")) == NULL){
+		err("Failed finding text section.");
+	}
+	if ((textSectionData = getSectionData(text)) == NULL){
 		err("Text section data is null.");
 	} else {
 		Debug("Got text section data.\n");
 		deets->sizeOfTextSection = getSectionSize(textSectionData);
-		deets->textData = getSectionStartAddress(textSectionData);
+		deets->textData = getSectionBuffer(textSectionData);
 		deets->entropy = calculateEntropy(deets->textData, fileDetails.st_size);	
-
+		//disasm(getSectionBuffer(textSectionData),getSectionSize(textSectionData),0);
 
 	}
 
-	if ((dynamicStringData = getSectionData(e ,".dynstr")) == NULL){
+	if ((dynStr = getSection(e,".dynstr")) == NULL){
+		err("Failed finding dynStr section.");
+	}
+	if ((dynamicStringData = getSectionData(dynStr)) == NULL){
 		err("dynstr section data is null.");
 	} else {
 		Debug("Got dynstr section data.\n");
 		dynStrSize = getSectionSize(dynamicStringData);
 		Debug("dynStrSize: %lu\n",(unsigned long)dynStrSize);
-		dynStrAddr = getSectionStartAddress(dynamicStringData);
+		dynStrAddr = getSectionBuffer(dynamicStringData);
 		Debug("dynStrAddr: %x\n", (unsigned int)dynStrAddr);			
 		dlopenNumber = getDlopenNumber(dynStrAddr, dynStrSize);
 	}
 
-	if ((dynamicSymbolData = getSectionData(e ,".dynsym")) == NULL){
+	if ((dynSym = getSection(e,".dynsym")) == NULL){
+		err("Failed finding dynSym section.");
+	}
+	if ((dynamicSymbolData = getSectionData(dynSym)) == NULL){
 		err("Dynsym section data is null.");
 	} else if (dlopenNumber >= 0){
 		Debug("Got dynsym section data.\n");
 		dynSymSize = getSectionSize(dynamicSymbolData);
 		Debug("dynSymSize: %lu\n",(unsigned long)dynSymSize);
-		dynSymAddr = getSectionStartAddress(dynamicSymbolData);
+		dynSymAddr = getSectionBuffer(dynamicSymbolData);
 		Debug("dynSymAddr: %x\n", (unsigned int)dynSymAddr);
 		dlopenIndex = parseDynSym(dynSymAddr, dynSymSize, dlopenNumber);	
 		Debug("Dynamic Symbol index is: %d\n",dlopenNumber);
 	}
-
-	if ((relPltData = getSectionData(e,".rel.plt")) == NULL){
+	if ((relPlt = getSection(e,".rel.plt")) == NULL){
+		err("Failed finding relPlt section");
+	}
+	if ((relPltData = getSectionData(relPlt)) == NULL){
 		err(".rel.plt. data is null.\n");
 	} else if (dlopenIndex >= 0){
 		Debug("got .rel.plt section data.\n");
 		relPltSize = getSectionSize(relPltData);
 		Debug("relPltSize: %lu\n", (unsigned long)relPltSize);
-		relPltAddr = getSectionStartAddress(relPltData);
+		relPltAddr = getSectionBuffer(relPltData);
 		Debug("relPltAddr: %x\n", (unsigned int)relPltAddr);	
 		if ((dlopenAddr = parseRelPlt(relPltAddr, relPltSize, dlopenIndex)) >= 0){
 			Debug("dlopenAddr: %x\n", (unsigned int)dlopenAddr);
@@ -122,14 +135,17 @@ ElfDetails *parseElf(char *binName){
 			err("dlopenAddr not found");
 		}
 	}
-
-	if ((plt = getSectionData(e,".plt")) == NULL){
+	
+	if ((plt = getSection(e,".plt")) == NULL){
+		err("Failed finding plt section.");
+	}
+	if ((pltData = getSectionData(plt)) == NULL){
 		err(".plt data is null.\n");
 	} else if (dlopenAddr >= 0){
 		Debug("got .plt section data.\n");
-		pltSize = getSectionSize(plt);
+		pltSize = getSectionSize(pltData);
 		Debug("pltSize: %lu\n", (unsigned long)pltSize);
-		pltAddr = getSectionStartAddress(plt);
+		pltAddr = getSectionBuffer(pltData);
 		Debug("pltAddr: %x\n", (unsigned int)pltAddr);
 		deets->numDlopenCalls = disasm(pltAddr, pltSize, dlopenAddr);				
 	}
@@ -144,11 +160,9 @@ ElfDetails *parseElf(char *binName){
 /*-----------------------
   PRIVATE FUNCTIONS
   ------------------------*/
-Elf_Data *getSectionData(Elf *elf, char *wantedSection){
-	Debug("getSectionData called.\n");
-
+Elf_Scn *getSection(Elf *elf, char *wantedSection){
+	Debug("getSection called.\n");
 	Elf_Scn *section = NULL;
-	Elf_Data *elfData = NULL;
 	GElf_Shdr sectionHeader;
 	//void *textSectionData = NULL;
 	char *sectionName = NULL;
@@ -176,16 +190,34 @@ Elf_Data *getSectionData(Elf *elf, char *wantedSection){
 		if (strcmp(sectionName, wantedSection) == 0 ){
 
 			Debug("Found section: %s\n",sectionName);
-			elfData = elf_getdata(section,elfData);
-			return elfData;
+			Debug("Section address: %x\n", (unsigned int)sectionHeader.sh_addr);
+			return section;
 		}	
 
 	}
 	//return null pointer if fail
 	return NULL;	
+
+}
+
+Elf_Data *getSectionData(Elf_Scn *section){
+	Elf_Data *elfData = NULL;
+	Debug("getSectionData called.\n");
+	elfData = elf_getdata(section,elfData);
+	return elfData;
+
 }		
 
-void *getSectionStartAddress(Elf_Data *data){
+unsigned int getSectionStartAddress(Elf_Scn *section){
+	GElf_Shdr sectionHeader;
+
+	if (gelf_getshdr(section, &sectionHeader) != &sectionHeader){
+			err("Getting section header failed.");
+		}
+	return sectionHeader.sh_addr;
+}
+
+void *getSectionBuffer(Elf_Data *data){
 	Debug("getSectionStartAddress called.\n");
 	void *textData = 0;
 
