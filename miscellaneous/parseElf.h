@@ -16,3 +16,4 @@ uint64_t getSectionSize(Elf_Data *data);
 void destroyElfDetails(ElfDetails *deets);
 int parseDynSym(void *sectionData, uint64_t sectionSize, unsigned int dlopenNum);
 int parseRelPlt(void *sectionData, uint64_t sectionSize, unsigned int index);
+void printElf(ElfDetails *deets);

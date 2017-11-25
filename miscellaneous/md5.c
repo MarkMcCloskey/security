@@ -35,7 +35,7 @@ void printHash(unsigned char *hash){
 	memcpy((void *)storage,(const void*)hash,MD5_DIGEST_LENGTH);
 	storage[MD5_DIGEST_LENGTH] = '\0';
 	
-	printf("hash: ");
+	printf("Hash of text section: ");
 	for (i = 0; i < MD5_DIGEST_LENGTH; i++){
 		printf("%x",storage[i]);
 	}

@@ -21,8 +21,8 @@
 //entropy of the file, number of calls to dlopen()
 
 /*------------------------
-PUBLIC FUNCTIONS
-------------------------*/
+  PUBLIC FUNCTIONS
+  ------------------------*/
 ElfDetails *parseElf(char *binName){
 	Debug("%s\n",binName);	
 	GElf_Ehdr header;
@@ -36,7 +36,7 @@ ElfDetails *parseElf(char *binName){
 	ElfDetails *deets = malloc(sizeof(ElfDetails));
 	struct stat fileDetails;
 	int dlopenNumber = 0, dlopenIndex = 0, dlopenAddr = 0;
-	
+
 	if (elf_version(EV_CURRENT) == EV_NONE){
 		err("Elf library initialization failed.");		
 	}
@@ -46,7 +46,7 @@ ElfDetails *parseElf(char *binName){
 	}else{
 		Debug("binary file opened.\n");
 	}
-	
+
 	//now that I have a file descriptor I can get the file size
 	//for the entropy call
 	if (fstat(fd, &fileDetails) < 0 ){
@@ -54,7 +54,7 @@ ElfDetails *parseElf(char *binName){
 	} else {
 		Debug("file size %ld\n", fileDetails.st_size);
 	}
-		
+
 	if ((e = elf_begin(fd, ELF_C_READ, NULL)) == NULL){
 		err("Elf_begin failed.");
 	}else{
@@ -66,20 +66,25 @@ ElfDetails *parseElf(char *binName){
 	}else{
 		Debug("Elf type confirmed.\n");
 	}
-	
+
 
 	if (gelf_getehdr(e, &header) == NULL){
 		err("Failure getting header.");
 	}else{
 		Debug("Got ELF header.\n");
 	}
-	
+
 	if ((textSectionData = getSectionData(e ,".text")) == NULL){
 		err("Text section data is null.");
 	} else {
 		Debug("Got text section data.\n");
+		deets->sizeOfTextSection = getSectionSize(textSectionData);
+		deets->textData = getSectionStartAddress(textSectionData);
+		deets->entropy = calculateEntropy(deets->textData, fileDetails.st_size);	
+
+
 	}
-	
+
 	if ((dynamicStringData = getSectionData(e ,".dynstr")) == NULL){
 		err("dynstr section data is null.");
 	} else {
@@ -102,7 +107,7 @@ ElfDetails *parseElf(char *binName){
 		dlopenIndex = parseDynSym(dynSymAddr, dynSymSize, dlopenNumber);	
 		Debug("Dynamic Symbol index is: %d\n",dlopenNumber);
 	}
-	
+
 	if ((relPltData = getSectionData(e,".rel.plt")) == NULL){
 		err(".rel.plt. data is null.\n");
 	} else if (dlopenIndex >= 0){
@@ -128,50 +133,48 @@ ElfDetails *parseElf(char *binName){
 		Debug("pltAddr: %x\n", (unsigned int)pltAddr);
 		deets->numDlopenCalls = disasm(pltAddr, pltSize, dlopenAddr);				
 	}
-	
 
-	
-	deets->sizeOfTextSection = getSectionSize(textSectionData);
-	deets->textData = getSectionStartAddress(textSectionData);
-	deets->entropy = calculateEntropy(deets->textData, fileDetails.st_size);		
+
+
+
 	close(fd);
 	return deets;
 }
 
 /*-----------------------
-PRIVATE FUNCTIONS
-------------------------*/
+  PRIVATE FUNCTIONS
+  ------------------------*/
 Elf_Data *getSectionData(Elf *elf, char *wantedSection){
 	Debug("getSectionData called.\n");
-	
+
 	Elf_Scn *section = NULL;
 	Elf_Data *elfData = NULL;
 	GElf_Shdr sectionHeader;
 	//void *textSectionData = NULL;
 	char *sectionName = NULL;
 	size_t sectionHeaderStrIdx = 0;
-	
+
 	if (elf_getshdrstrndx(elf, &sectionHeaderStrIdx) != 0){
 		err("Getting section header str index failed.");
 	}
-		
+
 	while((section = elf_nextscn(elf,section)) != NULL){
-		
+
 		if (gelf_getshdr(section, &sectionHeader) != &sectionHeader){
 			err("Getting section header failed.");
 		}
-	
+
 		if((sectionName = elf_strptr(elf, sectionHeaderStrIdx
-			, sectionHeader.sh_name)) == NULL){
+						, sectionHeader.sh_name)) == NULL){
 			err("Getting string pointer failed.");
 		} else {
-		
+
 			//Debug("Found section: %s\n",sectionName);
 		}
-	
-		//stop looking when we find the text section
+
+		//stop looking when we find the wanted section
 		if (strcmp(sectionName, wantedSection) == 0 ){
-			
+
 			Debug("Found section: %s\n",sectionName);
 			elfData = elf_getdata(section,elfData);
 			return elfData;
@@ -185,7 +188,7 @@ Elf_Data *getSectionData(Elf *elf, char *wantedSection){
 void *getSectionStartAddress(Elf_Data *data){
 	Debug("getSectionStartAddress called.\n");
 	void *textData = 0;
-	
+
 	if ((textData = data->d_buf) == 0){
 		err("Failure getting text section data.");
 	} else {
@@ -197,12 +200,12 @@ void *getSectionStartAddress(Elf_Data *data){
 uint64_t getSectionSize(Elf_Data *data){
 	Debug("getSectionSize called.\n");
 	uint64_t size = 0;
-	
+
 	if (data == NULL){
-		err("getTextSectionSize called with NULL pointer.");
+		err("getSectionSize called with NULL pointer.");
 	}
 	size = data->d_size;
-	Debug("getTextSectionSize found size of %" PRIu64 "\n",size);
+	Debug("getSectionSize found size of %" PRIu64 "\n",size);
 	return size;
 }
 
@@ -216,10 +219,10 @@ void destroyElfDetails(ElfDetails *deets){
 int getDlopenNumber(void *sectionData, uint64_t sectionSize){
 	Debug("getDlopenNumber called with address %lu and size %lu\n", (unsigned long)sectionData, (unsigned long)sectionSize);
 	unsigned int i = 0, temp = 0;
-	
+
 	while (i < sectionSize){
 		temp = strlen(sectionData + i);
-		
+
 		if (temp == 0){
 			i++;
 		} else {
@@ -231,7 +234,7 @@ int getDlopenNumber(void *sectionData, uint64_t sectionSize){
 			i += temp;
 		}
 	}
-	
+
 	//dlopen not found return fail
 	return -1;
 }
@@ -239,20 +242,20 @@ int getDlopenNumber(void *sectionData, uint64_t sectionSize){
 /*returns the index of dlopen in the dynamic symbol table or -1 if not found. */
 int parseDynSym(void *sectionData, uint64_t sectionSize, unsigned int dlopenNum){
 	Debug("parseDynSym called with address: %lu size: %lu dlopenNum: %d\n"
-		, (unsigned long)sectionData, (unsigned long)sectionSize, dlopenNum);
+			, (unsigned long)sectionData, (unsigned long)sectionSize, dlopenNum);
 	Elf32_Sym *symbol = (Elf32_Sym*)sectionData;
 	Elf32_Sym *endAddress = sectionData + sectionSize;	
 	Debug("Size of Sym struct: %x\n",sizeof(*symbol));
 	int index = 0;
-		
+
 	while(symbol < endAddress){
 		Debug("Symbol %x, sectiondata+sectionSize %x\n",(unsigned int)symbol,(unsigned int) (sectionData + sectionSize));
 		Debug("Symbol name: %x, value: %x\n",symbol->st_name, symbol->st_value);
-		
+
 		if (symbol->st_name == dlopenNum){
 			return index;
 		}
-	
+
 		symbol++;
 		index++;
 		Debug("New symbol %x\n",(unsigned int) symbol);	
@@ -264,14 +267,14 @@ int parseDynSym(void *sectionData, uint64_t sectionSize, unsigned int dlopenNum)
 /* returns the address of dlopen in .got.plt if found or -1 if fail. */
 int parseRelPlt(void *sectionData, uint64_t sectionSize, unsigned int index){
 	Debug("parseDynSym called with address: %lu size: %lu index: %d\n"
-		, (unsigned long)sectionData, (unsigned long)sectionSize, index);
+			, (unsigned long)sectionData, (unsigned long)sectionSize, index);
 	Elf32_Rel *relo = (Elf32_Rel*)sectionData;
 	Elf32_Rel *endAddr = relo + sectionSize;
 
 	while (relo < endAddr){
 		Debug("relo offset: %x, relo info: %x sym: %x\n",(unsigned int)relo->r_offset
-			,(unsigned int) relo->r_info, (unsigned int)ELF32_R_SYM(relo->r_info));
-		
+				,(unsigned int) relo->r_info, (unsigned int)ELF32_R_SYM(relo->r_info));
+
 		if (ELF32_R_SYM(relo->r_info) == index){
 			return relo->r_offset;
 		}
@@ -279,3 +282,11 @@ int parseRelPlt(void *sectionData, uint64_t sectionSize, unsigned int index){
 	}
 	return -1;
 }
+
+void printElf(ElfDetails *deets){
+	printf("Size of text section: %lu\n", (unsigned long)deets->sizeOfTextSection);
+	printf("Number of dlopen calls: %lu\n", (unsigned long)deets->numDlopenCalls);
+	printf("Entropy of file: %lf\n", deets->entropy);
+	//one more piece of data
+}
+
