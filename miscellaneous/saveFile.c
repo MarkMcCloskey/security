@@ -8,7 +8,7 @@
 #define Debug(args...) if (debugSaveFile){ printf("SaveFile: "); printf(args);}
 #define MAX_BUF_SIZE 0x1000
 
-int createFileBuffer(char *buffer, ElfDetails *deets){
+int createFileBuffer(char *buffer, struct elfDetails *deets){
 	int size = 0;
 	int i = 0, j = 0, temp = 0;
 
@@ -29,7 +29,7 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 	
 	while (deets->strings[i] && i < NUM_STRING_ADDRS){
 		strcpy(&bufPtr[j], deets->strings[i]);
-		temp = strlen(deets->strings[i] + 1);
+		temp = strlen(deets->strings[i]) + 1;
 		size += temp;
 		j += temp;
 		i++;

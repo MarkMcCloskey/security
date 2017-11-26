@@ -9,4 +9,4 @@ typedef struct{
 	char strings[];	
 } SaveFile;
 
-int createFileBuffer(char *buffer, ElfDetails *deets);
+int createFileBuffer(char *buffer, struct elfDetails *deets);

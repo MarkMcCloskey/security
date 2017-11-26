@@ -7,13 +7,14 @@
 #include "md5.h"
 #include "entropy.h"
 
-#define debugMain 0
+#define debugMain 1
 #define Debug(args...) if(debugMain){ printf("main: "); printf(args);}
 
 int main(){
 	int userChoice;
 	char *binaryName;	
 	ElfDetails *deets = 0;
+	char buffer[0x1000];
 	
 	getUsername();
 	getPassword();
@@ -37,6 +38,8 @@ int main(){
 			
 			case SAVE_INFO:
 				Debug("user chose save info\n");
+				createFileBuffer(buffer, deets);
+				
 				break;
 			
 			case EXIT:
@@ -58,3 +61,4 @@ int main(){
 	}
 	return 0;
 }
+

@@ -1,11 +1,11 @@
 CC=gcc
-CFLAGS=-c -Wall -Wextra -O3 
+CFLAGS=-c -Wall -Wextra -Og 
 LFLAGS=-lelf -lssl -lcrypto -lcapstone -lm
 
 all: binScan
 
-binScan: main.o commandLine.o err.o parseElf.o md5.o entropy.o disasm.o unpass.o saveFile.o
-	$(CC) main.o commandLine.o err.o parseElf.o md5.o entropy.o disasm.o unpass.o saveFile.o -o binScan $(LFLAGS)
+binScan: main.o commandLine.o err.o parseElf.o md5.o entropy.o disasm.o unpass.o
+	$(CC) main.o commandLine.o err.o parseElf.o md5.o entropy.o disasm.o unpass.o -o binScan $(LFLAGS)
 
 main.o: main.c 
 	$(CC) $(CFLAGS) main.c 
@@ -31,7 +31,5 @@ disasm.o: disasm.c
 unpass.o: unpass.asm
 	nasm -f elf32 unpass.asm
 
-saveFile.o: saveFile.c
-	$(CC) $(CFLAGS) saveFile.c
 .PHONY clean:
 	rm *.o binScan 

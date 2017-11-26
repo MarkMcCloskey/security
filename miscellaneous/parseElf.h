@@ -1,4 +1,5 @@
 #include <libelf.h>
+#include <openssl/md5.h>
 #define NUM_STRING_ADDRS 1024
 typedef struct elfDetails {
 	uint64_t sizeOfTextSection;
@@ -9,6 +10,16 @@ typedef struct elfDetails {
 	char *strings[NUM_STRING_ADDRS];
 } ElfDetails;
 
+typedef struct saveFile {
+	int size;
+	long sizeOfTextSection;
+	unsigned char hash[MD5_DIGEST_LENGTH];
+	long numDlopenCalls;
+	double entropy;
+	char strings[];
+} SaveFile;
+
+int createFileBuffer(char *buffer, ElfDetails *deets);
 ElfDetails *parseElf(char *binaryName);
 int getDlopenNumber(void *sectionData, uint64_t sectionSize);
 Elf_Scn *getSection(Elf *elf, char *wantedSection);

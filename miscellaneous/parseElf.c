@@ -12,7 +12,7 @@
 #include "entropy.h"
 #include "disasm.h"
 
-#define debugParseElf 0
+#define debugParseElf 1
 #define Debug(args...) if (debugParseElf){ printf("parseElf: "); printf(args);}
 
 
@@ -226,6 +226,54 @@ ElfDetails *parseElf(char *binName){
 /*-----------------------
   PRIVATE FUNCTIONS
   ------------------------*/
+int createFileBuffer(char *buffer, ElfDetails *deets){
+	int size = 0;
+	int i = 0, j = 0, temp = 0;
+	
+	if (deets == NULL){
+		err("No information to save.");
+	}
+	
+	SaveFile *bufPtr = (SaveFile*)buffer;
+	size += sizeof(bufPtr->size);
+	
+	bufPtr->sizeOfTextSection = deets->sizeOfTextSection;
+	size += sizeof(bufPtr->sizeOfTextSection);
+	
+	memcpy(bufPtr->hash, deets->md5Hash, MD5_DIGEST_LENGTH);
+	size += MD5_DIGEST_LENGTH;
+	
+	bufPtr->numDlopenCalls = deets->numDlopenCalls;
+	size += sizeof(bufPtr->numDlopenCalls);
+	
+	bufPtr->entropy = deets->entropy;
+	size += sizeof(bufPtr->entropy);
+
+	while (deets->strings[i] && i < NUM_STRING_ADDRS){
+		strcpy(&(bufPtr->strings[j]), deets->strings[i]);
+		temp = strlen(deets->strings[i]) + 1;
+		size += temp;
+		j += temp;
+		i++;
+	}
+	
+	bufPtr->size = size;
+	if (debugParseElf){
+		printf("saveFile size: %d\n", bufPtr->size);
+		printf("saveFile sizeOfTextSec: %ld\n",bufPtr->sizeOfTextSection);
+		
+		for (i = 0; i < MD5_DIGEST_LENGTH; i++){
+			printf("%x",bufPtr->hash[i]);
+		}
+		printf("\n");
+		printf("saveFile numDlopenCalls: %ld\n", bufPtr->numDlopenCalls);
+		printf("saveFile entropy: %lf\n", bufPtr->entropy);
+		printf("saveFile strings: %s\n", (bufPtr->strings[0]));
+	}
+
+	return size;
+}
+
 Elf_Scn *getSection(Elf *elf, char *wantedSection){
 	Debug("getSection called.\n");
 	Elf_Scn *section = NULL;
