@@ -5,13 +5,13 @@
 
 #include "md5.h"
 
-#define debug 1
-#define Debug(args...) if(debug) printf("md5: "); printf(args);
+#define debugMD5 0
+#define Debug(args...) if(debugMD5){ printf("md5: "); printf(args);}
 unsigned char *hash(void *loc, unsigned long size){
 	Debug("hash called\n");
 	unsigned long i = 0;
 	unsigned char *text = loc;
-	if (debug){
+	if (debugMD5){
 		printf("original text: ");
 		for (i = 0; i < size; i++ ){
 			printf("%x",text[i]);
@@ -22,7 +22,7 @@ unsigned char *hash(void *loc, unsigned long size){
 	unsigned char *hash = (unsigned char *)malloc(MD5_DIGEST_LENGTH);
 	MD5((const unsigned char*)loc, size, hash);
 	
-	if (debug){
+	if (debugMD5){
 		printHash(hash);
 	}	
 	return hash;

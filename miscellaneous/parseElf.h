@@ -1,11 +1,12 @@
 #include <libelf.h>
-
+#define NUM_STRING_ADDRS 1024
 typedef struct elfDetails {
 	uint64_t sizeOfTextSection;
  	void  *textData;
 	unsigned char *md5Hash;
 	uint64_t numDlopenCalls;
 	double entropy;
+	char *strings[NUM_STRING_ADDRS];
 } ElfDetails;
 
 ElfDetails *parseElf(char *binaryName);

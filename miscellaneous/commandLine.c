@@ -5,8 +5,8 @@
 #include "commandLine.h"
 #include "err.h"
 
-#define debug 1
-#define Debug(args...) if (debug) printf("commandline: "); printf(args);
+#define debugCommandLine 0
+#define Debug(args...) if (debugCommandLine){ printf("commandline: ");  printf(args);}
 
 char username[STRING_LENGTH + 1] = "";
 char password[STRING_LENGTH + 1] = "";
@@ -32,7 +32,7 @@ char *getBinaryName(){
 	Debug("getBinaryName called.\n");
 	int i = 0;
 	char c;
-	printf("Entry binary name: ");
+	printf("Enter binary name: ");
 	while ((c = getchar()) != EOF && c != '\n' && i < BINARY_NAME_LENGTH){
 		binaryName[i] = c;
 		i++;

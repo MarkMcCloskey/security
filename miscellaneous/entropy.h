@@ -1,1 +1,1 @@
-double calculateEntropy(void *data, uint64_t size);
+double calculateEntropy(int fileDescriptor, uint64_t size);

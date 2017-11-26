@@ -7,13 +7,13 @@
 #include "md5.h"
 #include "entropy.h"
 
-#define debug 1
-#define Debug(args...) if(debug) printf("main: "); printf(args);
+#define debugMain 0
+#define Debug(args...) if(debugMain){ printf("main: "); printf(args);}
 
 int main(){
 	int userChoice;
 	char *binaryName;	
-	ElfDetails *deets;
+	ElfDetails *deets = 0;
 	
 	getUsername();
 	getPassword();
@@ -53,7 +53,8 @@ int main(){
 
 
 
-	
-	destroyElfDetails(deets);
+	if (deets){	
+		destroyElfDetails(deets);
+	}
 	return 0;
 }
