@@ -7,9 +7,9 @@
 
 #define debugDisasm 0
 #define Debug(args...) if (debugDisasm){ printf("disasm: "); printf(args);}
-static void print_insn_detail(csh ud, cs_mode mode, cs_insn *ins);
-static void print_string_hex(char *comment, unsigned char *str, size_t len);
-static csh handle;
+//static void print_insn_detail(csh ud, cs_mode mode, cs_insn *ins);
+//static void print_string_hex(char *comment, unsigned char *str, size_t len);
+//static csh handle;
 
 unsigned int stringAddrs[NUM_STRING_ADDRS];
 
@@ -18,31 +18,13 @@ the address where the code starts, and a the address of a cs_insn structure wher
 It will then dissasemble the code and return the number of instructions. Don't forget to cs_free(insn, numInstructions)*/
 int disasm(unsigned char *code, unsigned int codeSize, int codeStartAddress, cs_insn **insn){
 	Debug("Disasm called with code %x and codeSize %i\n",(unsigned int)code, codeSize);
-	csh handle;
-	//cs_insn *insn;
-	size_t count;
-	//int numDlopens = 0;
+	csh handle = 0;
+	size_t count = 0;
 	if(cs_open(CS_ARCH_X86, CS_MODE_32, &handle) != CS_ERR_OK){
 		err("cs open failed");
 	}
 	cs_option(handle,CS_OPT_DETAIL, CS_OPT_ON);
 	count = cs_disasm(handle,code, codeSize, codeStartAddress,0,insn);
-	//numDlopens = countDlopens(insn, count, dlopenAddr);
-/*	
-	if (count > 0){
-		size_t j;
-		for (j = 0; j < count; j++){
-			printf("0x%"PRIx32":\t%s\t\t%s\n",(unsigned int)insn[j].address, insn[j].mnemonic
-				, insn[j].op_str);
-			print_insn_detail(handle,CS_MODE_32,&insn[j]);	
-			//printf("%s\n",insn[j].op_str);
-		}
-		cs_free(insn,count);	
-	} else {
-		err("cs_disasm failed.");
-	}*/
-	//cs_free(insn,count);
-	//cs_close(&handle);
 	return count;
 
 }
@@ -52,8 +34,8 @@ number of instructions, and the address of dlopenAddr. It will return the addres
 in the .text section or -1 on error.*/
 int findDlopenAddr(cs_insn *insn, size_t count, int dlopenAddr){
 	Debug("findDlopenAddr called with count %d dlopenAddr: %x\n", (int)count, (unsigned int)dlopenAddr);
-	size_t j;
-	char hex[9];
+	size_t j = 0;
+	char hex[9] = "";
 	sprintf(hex, "%x",dlopenAddr);
 	Debug("hex string: %s\n",hex);
 	
@@ -73,8 +55,8 @@ int countDlopens(cs_insn *insn, size_t count, int dlopenAddr/*, unsigned int *st
 	Debug("countDlopens called with count: %d dlopenAddr: %x\n", count, (unsigned int)dlopenAddr); 
 	size_t j, i = 0;
 	int numDlopens = 0;
-	char hex[9];
-	char *stringStr;
+	char hex[9] = "";
+	char *stringStr = NULL;
 	unsigned int stringAddr;
 	sprintf(hex, "%x",dlopenAddr);
 	Debug("hex string: %s\n",hex);
@@ -85,7 +67,7 @@ int countDlopens(cs_insn *insn, size_t count, int dlopenAddr/*, unsigned int *st
 			stringStr = strstr(insn[j-1].op_str,"0x");
 			Debug("String string is %s\n", stringStr);
 			stringAddr = strtol(stringStr, NULL, 16);
-			printf("Hex string addr is %s\n", (char*)stringAddr);
+			Debug("Hex string addr is %s\n", (char*)stringAddr);
 			Debug("StringAddr is %x\n",stringAddr);
 			stringAddrs[i++] = stringAddr;//store string addr for later resolution
 		}
@@ -96,6 +78,7 @@ int countDlopens(cs_insn *insn, size_t count, int dlopenAddr/*, unsigned int *st
 
 
 /* pulled from the Captsone-Engine source code to print detailed instructions.*/
+/*
 static void print_insn_detail(csh ud, cs_mode mode, cs_insn *ins)
 {
 
@@ -191,8 +174,10 @@ static void print_insn_detail(csh ud, cs_mode mode, cs_insn *ins)
 	}
 	printf("\n");
 }
+*/
 
 /* Pulled from the Capstone-Engine source code because print_insn_detail needed it.*/
+/*
 static void print_string_hex(char *comment, unsigned char *str, size_t len)
 {
 	unsigned char *c;
@@ -201,4 +186,4 @@ static void print_string_hex(char *comment, unsigned char *str, size_t len)
 		printf("0x%02x ", *c & 0xff);
 	}
 	printf("\n");
-}
+}*/

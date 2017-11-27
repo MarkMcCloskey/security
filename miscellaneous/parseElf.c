@@ -12,17 +12,15 @@
 #include "entropy.h"
 #include "disasm.h"
 
-#define debugParseElf 1
+#define debugParseElf 0
 #define Debug(args...) if (debugParseElf){ printf("parseElf: "); printf(args);}
 
-
-//need to verify format of binary
-//5 classes of info: size in bytes of text sections, md5 hash of .txt section,
-//entropy of the file, number of calls to dlopen()
 
 /*------------------------
   PUBLIC FUNCTIONS
   ------------------------*/
+/* big ugly function that I hate. Parses the elf and returns a structure containing
+   the 5 pieces of information needed. */
 ElfDetails *parseElf(char *binName){
 	Debug("%s\n",binName);	
 	GElf_Ehdr header;
@@ -36,13 +34,13 @@ ElfDetails *parseElf(char *binName){
 	void *dynStrBuf = 0, *dynSymBuf = 0, *relPltBuf = 0, *pltBuf = 0;
 	unsigned int textSectionAddr = 0, pltAddr = 0;
 	extern unsigned int stringAddrs[];//make sure we can find stringAddrs here
-	int fd;
+	int fd = 0;
 	ElfDetails *deets = malloc(sizeof(ElfDetails));
 	struct stat fileDetails;
 	int dlopenNumber = 0, dlopenIndex = 0, dlopenAddr = 0;
 
-	cs_insn *insn;
-	int count;
+	cs_insn *insn = NULL;
+	int count = 0;
 
 	if (elf_version(EV_CURRENT) == EV_NONE){
 		err("Elf library initialization failed.");		
@@ -81,7 +79,8 @@ ElfDetails *parseElf(char *binName){
 		Debug("Got ELF header.\n");
 	}
 
-
+	//get text section, use this to get size of text section
+	//and calculate entropy
 	if ((text = getSection(e,".text")) == NULL){
 		err("Failed finding text section.");
 	}
@@ -169,7 +168,7 @@ ElfDetails *parseElf(char *binName){
 	count = disasm(deets->textData, deets->sizeOfTextSection, textSectionAddr, &insn);
 	deets->numDlopenCalls = countDlopens(insn, count, dlopenAddr);
 	cs_free(insn,count);
-	
+
 	//resolve strings
 	Elf_Scn *ro = NULL;
 	Elf_Data *rodata = NULL;	
@@ -177,6 +176,7 @@ ElfDetails *parseElf(char *binName){
 	void *rodataBuf = 0;
 	unsigned int rodataAddr = 0;
 
+	//get read only data so we can find the strings themselves
 	ro = getSection(e, ".rodata");
 	rodata = getSectionData(ro);
 	rodataSize = getSectionSize(rodata);	
@@ -188,40 +188,49 @@ ElfDetails *parseElf(char *binName){
 	if (rodataHdr.sh_type == SHT_STRTAB){
 		Debug("rodata has STRTAB type.\n");
 	}
-	
-	int j = 0, k = 0, inc = 0;
+
+	int j = 0, k = 0, inc = 0, copy = 1;
 	char *st = rodataBuf;
-	
+
 	//scan through rodata	
 	while (st < (char*)(rodataBuf + rodataSize)){
 		j = 0;
 		//at every address check for a match for one passed to dlopen
 		while (stringAddrs[j]){
-			//if there is one
-			if (stringAddrs[j++] == (unsigned int)rodataAddr + k){
-				
+			copy = 1;
+			//if there was no string passed stringAddr == 0 or we've found a match
+			if (stringAddrs[j] == 0 ||stringAddrs[j] == (unsigned int)rodataAddr + k){
+
 				inc = 0;
 				//find an open pointer to store the string at
 				while(deets->strings[inc]){
 					//if we've already stored the string don't do so again
 					if (strcmp(deets->strings[inc],st) == 0){
+						copy = 0;
 						break;
 					}	
 					inc++;
 				}
-				//create space for the new string to be copied to
-				deets->strings[inc] = malloc(strlen(st) + 1);
-				strcpy(deets->strings[inc], st);
-				Debug("string stored in deets: %s\n",deets->strings[inc]);	
+				if (copy){
+					//create space for the new string to be copied to
+					deets->strings[inc] = malloc(strlen(st) + 1);
+					if(stringAddrs[j] == 0){
+						strcpy(deets->strings[inc], "none");
+					}else{
+						strcpy(deets->strings[inc], st);
+						Debug("string stored in deets: %s\n",deets->strings[inc]);	
+					}
+				}	
 			}
+			j++;
+			st++;
+			k++;
 		}
-		st++;
-		k++;
 	}
-
 	close(fd);
 	return deets;
 }
+
 
 /*-----------------------
   PRIVATE FUNCTIONS
@@ -229,23 +238,23 @@ ElfDetails *parseElf(char *binName){
 int createFileBuffer(char *buffer, ElfDetails *deets){
 	int size = 0, savedSize = 0;
 	int i = 0, j = 0, temp = 0;
-	
+
 	if (deets == NULL){
 		err("No information to save.");
 	}
-	
+
 	SaveFile *bufPtr = (SaveFile*)buffer;
 	size += sizeof(bufPtr->size);
-	
+
 	bufPtr->sizeOfTextSection = deets->sizeOfTextSection;
 	size += sizeof(bufPtr->sizeOfTextSection);
-	
+
 	memcpy(bufPtr->hash, deets->md5Hash, MD5_DIGEST_LENGTH);
 	size += MD5_DIGEST_LENGTH;
-	
+
 	bufPtr->numDlopenCalls = deets->numDlopenCalls;
 	size += sizeof(bufPtr->numDlopenCalls);
-	
+
 	bufPtr->entropy = deets->entropy;
 	size += sizeof(bufPtr->entropy);
 	Debug("At this point size is %d\n", size);
@@ -259,12 +268,12 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 		j += temp;
 		i++;
 	}
-	
+
 	bufPtr->size = size;
 	if (debugParseElf){
 		printf("saveFile size: %d\n", bufPtr->size);
 		printf("saveFile sizeOfTextSec: %ld\n",bufPtr->sizeOfTextSection);
-		
+
 		for (i = 0; i < MD5_DIGEST_LENGTH; i++){
 			printf("%x",bufPtr->hash[i]);
 		}
@@ -277,6 +286,7 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 	return size;
 }
 
+//obfuscate saved information using XOR
 void fuzzFile(char *buffer, int size){
 	char fuzz = 0xA5;
 	int i = 0;
@@ -379,12 +389,14 @@ uint64_t getSectionSize(Elf_Data *data){
 void destroyElfDetails(ElfDetails *deets){
 	Debug("destroyElfDetails called.\n");
 	int j = 0;
-	while(deets->strings[j] && j < NUM_STRING_ADDRS){
-		free(deets->strings[j++]);
-	}
-	
-	free(deets);
+	if (deets != NULL){
+		while(deets->strings[j] && j < NUM_STRING_ADDRS){
+			free(deets->strings[j++]);
+		}
 
+		free(deets);
+	}
+	deets = NULL;
 }
 
 /* returns the offset of dlopen if successful or -1 if failure.*/

@@ -7,15 +7,15 @@
 #include "md5.h"
 #include "entropy.h"
 
-#define debugMain 1
+#define debugMain 0
 #define Debug(args...) if(debugMain){ printf("main: "); printf(args);}
 
 int main(){
-	int userChoice;
-	int bufferSize;
+	int userChoice = 0;
+	int bufferSize = 0;
 	int i = 0;
-	char *binaryName;	
-	ElfDetails *deets = 0;
+	char *binaryName = NULL;	
+	ElfDetails *deets = NULL;
 	char buffer[0x1000] = {0};
 	
 	getUsername();
@@ -60,6 +60,7 @@ int main(){
 				break;
 			
 			case EXIT:
+				destroyElfDetails(deets);
 				Debug("user chose exit\n");
 				break;
 			
@@ -70,12 +71,6 @@ int main(){
 
 		}
 	}while(userChoice != EXIT);
-
-
-
-	if (deets){	
-		destroyElfDetails(deets);
-	}
 	return 0;
 }
 
