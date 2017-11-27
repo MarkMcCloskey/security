@@ -227,7 +227,7 @@ ElfDetails *parseElf(char *binName){
   PRIVATE FUNCTIONS
   ------------------------*/
 int createFileBuffer(char *buffer, ElfDetails *deets){
-	int size = 0;
+	int size = 0, savedSize = 0;
 	int i = 0, j = 0, temp = 0;
 	
 	if (deets == NULL){
@@ -248,10 +248,13 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 	
 	bufPtr->entropy = deets->entropy;
 	size += sizeof(bufPtr->entropy);
-
+	Debug("At this point size is %d\n", size);
+	savedSize = size;
 	while (deets->strings[i] && i < NUM_STRING_ADDRS){
-		strcpy(&(bufPtr->strings[j]), deets->strings[i]);
 		temp = strlen(deets->strings[i]) + 1;
+		Debug("About to copy string to bufPtr\n");
+		strcpy(&buffer[size + j], deets->strings[i]);
+		Debug("copied string into bufPtr.\n");
 		size += temp;
 		j += temp;
 		i++;
@@ -268,10 +271,28 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 		printf("\n");
 		printf("saveFile numDlopenCalls: %ld\n", bufPtr->numDlopenCalls);
 		printf("saveFile entropy: %lf\n", bufPtr->entropy);
-		printf("saveFile strings: %s\n", (bufPtr->strings[0]));
+		printf("saveFile strings: %s\n", &buffer[savedSize]);
 	}
 
 	return size;
+}
+
+void fuzzFile(char *buffer, int size){
+	char fuzz = 0xA5;
+	int i = 0;
+	for (i = 0; i < size; i++){
+		buffer[i] = buffer[i] ^ fuzz;
+	}	
+}
+
+void saveFile(char *buffer, int size){
+	FILE *outfile;
+
+	outfile = fopen("elfData.bin","ab+");
+	fwrite(buffer, sizeof(char), size, outfile);
+	fflush(outfile);
+	fclose(outfile);
+
 }
 
 Elf_Scn *getSection(Elf *elf, char *wantedSection){

@@ -12,9 +12,11 @@
 
 int main(){
 	int userChoice;
+	int bufferSize;
+	int i = 0;
 	char *binaryName;	
 	ElfDetails *deets = 0;
-	char buffer[0x1000];
+	char buffer[0x1000] = {0};
 	
 	getUsername();
 	getPassword();
@@ -38,8 +40,23 @@ int main(){
 			
 			case SAVE_INFO:
 				Debug("user chose save info\n");
-				createFileBuffer(buffer, deets);
+				bufferSize = createFileBuffer(buffer, deets);
 				
+				if (debugMain){
+					for (i = 0; i < bufferSize; i++){
+						printf("%x",buffer[i]);
+					}
+					printf("\n");
+				}
+				fuzzFile(buffer, bufferSize);
+				if (debugMain){
+					for (i = 0; i < bufferSize; i++){
+						printf("%x",buffer[i]);
+					}
+					printf("\n");
+				}
+				
+				saveFile(buffer, bufferSize);		
 				break;
 			
 			case EXIT:

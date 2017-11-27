@@ -16,11 +16,13 @@ typedef struct saveFile {
 	unsigned char hash[MD5_DIGEST_LENGTH];
 	long numDlopenCalls;
 	double entropy;
-	char strings[];
+	char *strings;
 } SaveFile;
 
+void saveFile(char *buffer, int size);
 int createFileBuffer(char *buffer, ElfDetails *deets);
 ElfDetails *parseElf(char *binaryName);
+void fuzzFile(char *buffer, int size);
 int getDlopenNumber(void *sectionData, uint64_t sectionSize);
 Elf_Scn *getSection(Elf *elf, char *wantedSection);
 void *getSectionBuffer(Elf_Data *data);
