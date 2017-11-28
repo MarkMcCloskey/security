@@ -1,4 +1,5 @@
 #include <stdio.h>
+//REQUIREMENT 14
 #include <openssl/md5.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +8,7 @@
 
 #define debugMD5 0
 #define Debug(args...) if(debugMD5){ printf("md5: "); printf(args);}
+//REQUIREMENT 5
 unsigned char *hash(void *loc, unsigned long size){
 	Debug("hash called\n");
 	unsigned long i = 0;

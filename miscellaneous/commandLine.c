@@ -42,7 +42,7 @@ char *getBinaryName(){
 	Debug("Binary name is %s\n",binaryName);
 	return binaryName;
 }
-
+//REQUIREMENT 10
 void getUsername(){
 	Debug("getUsername called.\n");
 	int i = 0;

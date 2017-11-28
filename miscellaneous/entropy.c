@@ -6,7 +6,7 @@
 
 #define debugEntropy 0
 #define Debug(args...) if (debugEntropy){ printf("entropy: "); printf(args);}
-
+//REQUIREMENT 6
 double calculateEntropy(int fd, uint64_t size){
 	Debug("calculateEntropy called\n");	
 

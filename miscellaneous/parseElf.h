@@ -1,7 +1,9 @@
+//REQUIREMENT 13
 #include <libelf.h>
 #include <openssl/md5.h>
 #define NUM_STRING_ADDRS 1024
 typedef struct elfDetails {
+	uint16_t machineType;
 	uint64_t sizeOfTextSection;
  	void  *textData;
 	unsigned char *md5Hash;
@@ -9,10 +11,11 @@ typedef struct elfDetails {
 	double entropy;
 	char *strings[NUM_STRING_ADDRS];
 } ElfDetails;
-
+//REQUIREMENT 8
 typedef struct saveFile {
 	int size;
 	long sizeOfTextSection;
+	uint16_t machineType;
 	unsigned char hash[MD5_DIGEST_LENGTH];
 	long numDlopenCalls;
 	double entropy;

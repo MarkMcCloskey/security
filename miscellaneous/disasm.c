@@ -48,6 +48,7 @@ int findDlopenAddr(cs_insn *insn, size_t count, int dlopenAddr){
 	return -1;
 }
 
+//REQUIREMENT 7
 /* countDlopens takes as input a cs_insn array holding the dissasembly of the .text section, size_t count
 which is the number of instructions in the array, and an int that is the address of the dlopen call in the
 .text section. It will return an int the number of times dlopen is called in the .text section. */

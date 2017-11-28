@@ -14,7 +14,7 @@
 
 #define debugParseElf 0
 #define Debug(args...) if (debugParseElf){ printf("parseElf: "); printf(args);}
-
+//this file satisfies REQUIREMENT 1
 
 /*------------------------
   PUBLIC FUNCTIONS
@@ -41,7 +41,7 @@ ElfDetails *parseElf(char *binName){
 
 	cs_insn *insn = NULL;
 	int count = 0;
-
+	
 	if (elf_version(EV_CURRENT) == EV_NONE){
 		err("Elf library initialization failed.");		
 	}
@@ -65,7 +65,7 @@ ElfDetails *parseElf(char *binName){
 	}else{
 		Debug("elf began.\n");
 	}
-
+	//REQUIREMENT 2
 	if (elf_kind(e) != ELF_K_ELF){
 		err("Binary is not an ELF object.");
 	}else{
@@ -77,6 +77,8 @@ ElfDetails *parseElf(char *binName){
 		err("Failure getting header.");
 	}else{
 		Debug("Got ELF header.\n");
+		//get machine type
+		deets->machineType = (uint16_t)header.e_machine;
 	}
 
 	//get text section, use this to get size of text section
@@ -89,6 +91,7 @@ ElfDetails *parseElf(char *binName){
 	} else {
 		textSectionAddr = getSectionStartAddress(text);
 		Debug("Got text section data.\n");
+		//REQUIREMENT 4
 		deets->sizeOfTextSection = getSectionSize(textSectionData);
 		deets->textData = getSectionBuffer(textSectionData);
 		deets->entropy = calculateEntropy(fd, fileDetails.st_size);	
@@ -166,6 +169,7 @@ ElfDetails *parseElf(char *binName){
 
 	//disassemble .text and count the number of dlopen calls made
 	count = disasm(deets->textData, deets->sizeOfTextSection, textSectionAddr, &insn);
+	//REQUIREMENT 7
 	deets->numDlopenCalls = countDlopens(insn, count, dlopenAddr);
 	cs_free(insn,count);
 
@@ -177,6 +181,7 @@ ElfDetails *parseElf(char *binName){
 	unsigned int rodataAddr = 0;
 
 	//get read only data so we can find the strings themselves
+	//OPTIONAL 1
 	ro = getSection(e, ".rodata");
 	rodata = getSectionData(ro);
 	rodataSize = getSectionSize(rodata);	
@@ -245,6 +250,9 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 
 	SaveFile *bufPtr = (SaveFile*)buffer;
 	size += sizeof(bufPtr->size);
+	
+	bufPtr->machineType = deets->machineType;
+	size += sizeof(bufPtr->machineType);
 
 	bufPtr->sizeOfTextSection = deets->sizeOfTextSection;
 	size += sizeof(bufPtr->sizeOfTextSection);
@@ -285,7 +293,7 @@ int createFileBuffer(char *buffer, ElfDetails *deets){
 
 	return size;
 }
-
+//REQUIREMENT 9
 //obfuscate saved information using XOR
 void fuzzFile(char *buffer, int size){
 	char fuzz = 0xA5;
@@ -471,6 +479,7 @@ void printElf(ElfDetails *deets){
 	printf("Size of text section: %lu\n", (unsigned long)deets->sizeOfTextSection);
 	printf("Number of dlopen calls: %lu\n", (unsigned long)deets->numDlopenCalls);
 	printf("Entropy of file: %lf\n", deets->entropy);
+	printf("Architecture designed for: %x\n",deets->machineType);
 	int i = 0;
 	printf("Strings passed to dlopen:\n");
 	while (deets->strings[i]){
