@@ -1,0 +1,23 @@
+Level 0: Simple enough to login via SSH using mobaxterm, password file is
+directly in home directory.
+
+Level 1: Again password is in root directory in a file named '-'. I learned
+that '-' is commonly used to refer to STDIN/STDOUT so to access the file you
+can specify the full path to it. 
+
+Level 2: Again password is in root directory in a file named 'spaces in this
+filename'. This was supposed to be tricky because you can't just type the
+filename out. Auto-complete will correctly fill in the filename for you
+otherwise you need to escape the spaces in the filename.
+
+Level 3: Password in file named .hidden in directory named inhere. Had to cd to
+inhere and ls -a to see hidden files.
+
+Level 4: A bunch of possible password files in the inhere directory. cat
+through them until I found one that looked like the previous passwords.
+cat ./-fileXX
+
+Level 5: Password is in inhere directory with following properties
+human-readable, 1033 bytes in size, not executable. In this level there are a
+bunch of possibilities for the correct file so it's time to use commands to do
+this for us. 
