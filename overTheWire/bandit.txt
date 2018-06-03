@@ -1,23 +1,103 @@
-Level 0: Simple enough to login via SSH using mobaxterm, password file is
+Level 0
+-------
+
+Simple enough to login via SSH using mobaxterm, password file is
 directly in home directory.
 
-Level 1: Again password is in root directory in a file named '-'. I learned
+Level 1
+-------
+
+Again password is in root directory in a file named '-'. I learned
 that '-' is commonly used to refer to STDIN/STDOUT so to access the file you
 can specify the full path to it. 
 
-Level 2: Again password is in root directory in a file named 'spaces in this
+Level 2
+-------
+
+Again password is in root directory in a file named 'spaces in this
 filename'. This was supposed to be tricky because you can't just type the
 filename out. Auto-complete will correctly fill in the filename for you
 otherwise you need to escape the spaces in the filename.
 
-Level 3: Password in file named .hidden in directory named inhere. Had to cd to
+Level 3
+-------
+
+Password in file named .hidden in directory named inhere. Had to cd to
 inhere and ls -a to see hidden files.
 
-Level 4: A bunch of possible password files in the inhere directory. cat
+Level 4
+-------
+
+A bunch of possible password files in the inhere directory. cat
 through them until I found one that looked like the previous passwords.
 cat ./-fileXX
 
-Level 5: Password is in inhere directory with following properties
+Level 5
+-------
+
+Password is in inhere directory with following properties
 human-readable, 1033 bytes in size, not executable. In this level there are a
 bunch of possibilities for the correct file so it's time to use commands to do
-this for us. 
+this for us.
+
+I got lucky and the first command I constructed found the password. I used find
+to locate a file of size 1033 bytes.
+
+find /home/bandit5/inhere/ -type -f -size 1033c
+
+Level 6
+-------
+
+Password is stored somewhere on the server and has the following properties:
+owned by user bandit7, owned by group bandit6, 33 bytes in size.
+
+I used the same type of find command as from level 5. What I got was a long
+list of possibilities. Scanning the list I see a bunch of permission denieds
+and then this nice little file ./var/lib/dpkg/info/bandit7.password tucked in.
+
+find . -type -f -size 33c -user bandit7 -group bandit6
+
+Level 7
+-------
+
+Password is stored in data.txt next to the word millionth.
+
+There is probably a better way to do this, but it is easy to use vim and 
+type :/millionth to get to the line containing the password.
+
+Could also do grep millionth data.txt to have it print to the command line.
+
+Level 8
+-------
+
+Password is in data.txt and is the only line that occurs only once.
+
+Sort the text file so all repeated lines are next to eachother then let uniq
+find the only uniq line.
+ 
+sort data.txt | uniq -u
+
+Level 9
+-------
+
+Password is in data.txt in one of the few human readable strings beginning
+with several '=' characters.
+
+One way to accomplish this is to just read the binary file in vim and search
+for the 'several ='.
+
+vim data.txt
+:%!xxd
+/===
+press n until you find something that looks like the previous passwords.
+
+for fun: 'grep -a ========== data.txt | strings --bytes=10' looks like it was
+intentional.
+
+Level 10
+--------
+
+Password is stored in data.txt which contains base64 encoded data.
+
+base64 -d data.txt
+
