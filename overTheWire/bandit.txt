@@ -101,3 +101,63 @@ Password is stored in data.txt which contains base64 encoded data.
 
 base64 -d data.txt
 
+Level 11
+--------
+
+Password is stored in data.txt where all upper and lower case letters have been
+rotated by 13 positions.
+
+Sounded like rot13 application at first but that's not installed on the server.
+Instead Wikipedia inspired: cat data.txt | tr 'A-Za-z' 'N-ZA-Mn-za-nm'
+
+Level 12
+--------
+
+Password is stored in data.txt which is a hex dump of a file that has been
+repeatedly compressed.
+
+Hex dump to binary file: xxd -r data.txt data.bin
+Find data.bin compression type: file data.bin -> gzip
+cp data.bin data.gz
+gunzip -N data.hz -> data2.bin. -N option unzips to original name
+file data2.bin shows compression type bzip with block size 900k
+bunzip2 data2.bin
+file data2.bin.out -> gzip
+cp data2.bin.out data3.gz
+gunzip -N data3.gz -> data4.bin
+file data4.bin -> POSIX tar archive
+tar -xf data4.bin -> data5.bin
+file data5.bin -> POSIX tar archive
+tar -xf data5.bin
+file data6.bin -> bzip2 compressed data block size = 900k
+bunzip2 data6.bin
+file data6.bin.out -> POSIX tar archive
+tar -xf data6.bin.out -> data8.bin
+file data8.bin -> gzip compressed
+gunzip -N -S .bin data8.bin -> data9.bin
+file data9.bin -> ASCII TEXT!!!
+
+What I learned: xxd can reverse hex dumps, cool. An automated script to unzip
+things would be nice, haha.
+
+Level 13
+--------
+Password for the next level is stored in /etc/bandit_pass/bandit14 and can only
+be read by user bandit14. For this level you don't get the next password but
+you get a private SSH key that can be used to log into the next level.
+
+ssh -i sshkey.private bandit14@localhost
+
+Level 14
+--------
+The password for the next level can be retrieved by submitting the password of
+the current level to port 30000 on localhost.
+
+cat /etc/bandit_pass/bandit14 | nc localhost 30000
+
+Level 15
+--------
+The password for the next level can be retrieved by submitting the password of
+the current level to port 30001 on localhost using SSL encryption.
+
+
