@@ -160,4 +160,46 @@ Level 15
 The password for the next level can be retrieved by submitting the password of
 the current level to port 30001 on localhost using SSL encryption.
 
+openssl s_client -connect localhost:30001 -ign_eof
 
+Level 16
+--------
+The credentials for the next level can be retrieved by submitting the password
+of the current level to a port on localhost in the range 31000 to 32000.
+
+//scan for open ports in the range
+nmap localhost -p31000-32000
+
+//start asking for the credentials by talking on the open ports
+//then store the returned information into a file
+cat /etc/bandit_pass/bandit16 | openssl s_client -connect localhost:<portNum>
+-ign_eof > /tmp/privateKey.txt
+
+//do some cleaning of the private key file and then
+//need to change permissions of file to make ssh happy
+chmod 600 /tmp/privateKey.txt
+
+//now login to next level
+ssh bandit17@localhost -i /tmp/privateKey.txt
+
+Level 17
+--------
+There are 2 files in the home directory. The password for the next level is in
+the passwords.new and is the only line that has been changed.
+
+diff passwords.new passwords.old
+
+Level 18
+--------
+The password for the next level is stored in a file readme in the
+homedirectory. Unfortunately, someone has modified .bashrc to log you out when
+you log in with SSH.
+
+ssh bandit18@localhost -o PasswordAuthentication=Yes cat readme
+
+Level 19
+--------
+To gain access to the next level you should use the setuid binary in the
+homedirectory.
+
+./bandit20-do cat /etc/bandit_pass/bandit20
