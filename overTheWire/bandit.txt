@@ -203,3 +203,49 @@ To gain access to the next level you should use the setuid binary in the
 homedirectory.
 
 ./bandit20-do cat /etc/bandit_pass/bandit20
+
+Level 20
+--------
+There is a setuid binary in the home directory that does the following: it
+makes a connection to localhost on the port you specify as a commandline
+argument. It then reads a line of text from the connection and compares it to
+the password in the previous level. If the password is correct, it will
+transmit the password for the next level.
+
+//setup a port that will drop the current password to anyone who connects
+cat /etc/bandit_pass/bandit20 | nc -l -p 40000 &
+//connect with suconnect
+./suconnect 40000
+
+Level 21
+--------
+A program is running automatically at regular intervals from cron, the
+time-based job scheduler. Look in /etc/cron.d/ for the configuration and see
+what command is being executed.
+
+//check cron job, notice it's running a script and dumping output to /dev/null
+//read script, notice it's dumping password to some place in /tmp/
+cat /tmp/<some place>
+
+Level 22
+--------
+A program is running automatically at regular intervals from cron. Look in
+/etc/cron.d/ for the configuration and see what command is being executed.
+
+//read script notice it's dumping password to /tmp/someFile named from the md5 of the
+//current users name. Run file to see output, dumps bandit22, not what I need.
+//I can use command in script to get where bandit23 is dumping its password.
+echo I am user bandit23 | md5sum | cut -d ' ' -f 1
+cat /tmp/<fileNameEchoed>
+
+Level 23
+--------
+A program is running automatically at regular intervals from cron. Look in
+/etc/cron.d/ for the configuration and see what command is being executed.
+
+NOT WORKING YET
+//the cronjob executes all scripts in /var/spool/bandit24 then deletes them.
+//write the following
+cat /etc/bandit_pass/bandit24 > /tmp/bleh.txt
+
+chmod 777 /var/spool/bandit24/script.h
