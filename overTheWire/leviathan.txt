@@ -1,0 +1,16 @@
+Level 0
+-------
+ls -a
+//notice there's a folder called .backup, interesting. 
+cd .backup
+ls
+//bookmarks.html... hmm. Search it, bunch of
+//website links allegedly. Fishy, use vim to search for the word pass
+//find password. Profit. Not sure if it's supposed to be there, who cares. 
+
+Level 1
+-------
+ls -a
+//there's a script named check
+./check
+//asks for password, yikes.
