@@ -25,3 +25,22 @@ PHASE 5
 -------
 
 Solution: O@EKMA
+
+PHASE 6
+-------
+
+Solution: 4 2 6 3 1 5
+
+Phase 6 took me some time to figure out. They gave away that there needed to be
+6 ints input. Then there was some verification that the input integers were <=
+6. Then I had to check the contents of the nodes and recognize they were
+expected to be in decreasing order. The nodes are something like this
+
+struct node {
+	int value;
+	int positionInList;
+	struct node *next;
+
+} Node;
+
+and the solution is the positionInList numbers ordered by value from greatest to least.
