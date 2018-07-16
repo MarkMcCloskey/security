@@ -39,6 +39,32 @@ Read something in as characters, which are a single byte each, then treat
 groups of those characters as integers. Need to remember that the underlying
 representation of characters are integers from 0 to 127. That means each of the
 F's in the following list is actually \0x7F\0x7F...etc
-FFFF FFFF FF-FF FFFF FFFF
-|..|+|..|+|.-.|+|..|+|..| = 0x21DD09EC
+FFFF FFFF FFFF FFFF FFFF
+|..|+|..|+|..|+|..|+|..| = 0x21DD09EC
 
+First Idea
+----------
+Can I just enter the hex string I need to match?
+\\x21\\xDD\\x09\\xEC\\x00
+...That's deceivingly close to correct but not quite. Also noticed the values
+aren't what I expect them to be... the machine must be little endian. Good find.
+
+Second Idea
+-----------
+Dividing the expected value by 5 yields something that I cannot enter as a
+string. Maybe I can subtract a little off the top then leave a value divisible by 4.
+
+Some quick math: 
+0x21dd09ec / 5 = 0x6c5cec8 //fill four out of the 5 positions with this number
+0x5c5cec8 * 4 = 0x1b173b20 // need to find what's left over
+0x21dd09ec - 0x1b173b20 = 0x6c5cecc //here's the value for the final position
+
+Write the following:
+#include <stdio.h>
+int main(void){
+	char *s = "\xc8\xce\xc5\x06\xc8\xce\xc5\x06\xc8\xce\xc5\x06\xc8\xce\xc5\x06\xcc\xce\xc5\x06";
+	printf("%s",s);
+}
+
+gcc -o printString printString.c
+./col $(tmp/bleh/printString)
