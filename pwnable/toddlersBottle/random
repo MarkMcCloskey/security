@@ -1,12 +1,12 @@
 Prompt: Daddy, teach me how to use random value in programming!
 
-
 random.c:
 #include <stdio.h>
 
 int main(){
         unsigned int random;
         random = rand();        // random value!
+				// uninitialized by srand
 
         unsigned int key=0;
         scanf("%d", &key);
@@ -20,3 +20,7 @@ int main(){
         printf("Wrong, maybe you should try 2^32 cases.\n");
         return 0;
 }
+
+Important thing here is that the random value is uninitialized and using an
+unsafe source of random values. The random number will be psuedorandom
+and be the same for every invocation of the program.
