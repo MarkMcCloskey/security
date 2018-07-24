@@ -1,0 +1,9 @@
+Prompt: Hey! check out this C implementation of a blackjack game!
+I found it online <broken link> I like to give my flags to millionares.
+how much money you got?
+
+So, the link to the C implementation doesn't work. After playing with the
+game for a few minutes I realized it is very basic and pretty much a broken
+mess. The dealer beat me with a hand of 26 once, the dealers hand increased by 
+one until it beat mine. I think you always lose. I decided to bet a negative 
+number, I lost, my score increased. Profit. Bet $-1000000. Flag.
