@@ -1,0 +1,43 @@
+Prompt: Nana told me that buffer overflow is one of the most common software
+vulnerability. Is that true?
+
+bof.c:
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+void func(int key){
+	char overflowme[32];
+	printf("overflow me : ");
+	gets(overflowme);	// smash me!//reads until newline of EOF
+				// will fill overflowme and then some
+				// need to reach the key stored on stack
+	if(key == 0xcafebabe){//overflow deadbeef to cafebabe
+		system("/bin/sh");
+	}
+	else{
+		printf("Nah..\n");
+	}
+}
+int main(int argc, char* argv[]){
+	func(0xdeadbeef); //key = 0xdeadbeef on stack
+	return 0;
+}
+
+Understanding needed for buffer overflows is a knowledge of the
+stack.
+	 _________________
+	|key       	  |<-- Higher address. The key is pushed 
+	|-----------------|			as an arg to function.
+	|Return address   | Return address stored
+	|-----------------|
+	|Caller's EBP     | Frame base pointer stored
+	|-----------------|
+	|Canary           | Depending on compilation, a canary to detect overflows.
+	|-----------------|
+	|overflowme buffer|<-- Lower address. The buffer we want to overflow
+        -------------------	in order to reach and eventually overwrite the
+				key.
+
+Callers EBP, return address, and canary in these cases are most likely 32 bits or 4 bytes
+each. Therefore need to fill the the 32 byte buffer with junk then 12 more bytes
+of junk, then finally cafebabe followed by newline.

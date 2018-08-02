@@ -1,0 +1,6 @@
+Prompt: Mommy, I wanna play a game!
+
+This challenge requires you to find the single fake coin in a group of coins.
+The best way to guess something is in O(logn) guesses by cutting the search
+space in half with every question. I notice that no matter how many coins 
+they give, they always give enough guesses to find the answer.
