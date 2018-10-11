@@ -1,0 +1,107 @@
+Forensics Warmup 1
+------------------
+Can you unzip this file for me and retreive the flag?
+unzip flag.zip ->flag.jpg
+flag in jpg. 
+picoCTF{welcome_to_forensics}
+
+Forensics Warmup 2
+------------------
+Hmm for some reason I can't open this png? Any ideas?
+...literally double click the file
+picoCTF{extensions_are_a_lie}
+
+file flag.png -> it's a JPEG.
+
+General Warmup 1
+----------------
+If I told you your grade was 0x41 in hexadecimal, what
+would it be in ASCII?
+
+See ASCII table -> A
+picoCTF{A}
+
+General Warmup 2
+----------------
+Can you convert the number 27(base 10) to binary(base 2)?
+
+27/2 -> 13 remainder 1
+13/2 -> 6 remainder 1
+6/2 -> 3 remainder 0
+3/2 -> 1 remainder 1
+1/2 -> 0 remainder 1
+
+picoCTF{11011}
+
+General Warmup 3
+----------------
+What is 0x3D(base 16) in decimal(base 10)?
+
+0x3D = 3 x 16^1 + 13 x 16^0 = (3 x 16) + (13 x 1)
+= 48 + 13 = 61
+
+picoCTF{61}
+
+Resources
+---------
+We put together a bunch of resources to help you out on our website!
+If you go over there, you might even find a flag!
+<Link to resource page>
+scroll down -> flag
+
+picoCTF{xiexie_ni_lai_zheli}
+
+Reversing Warmup 1
+------------------
+Throughout your journey you will have to run many programs. Can you
+navigate to <file_path> on the shell server and run tihs program
+to retreive the flag?
+
+go there -> run program -> flag
+
+picoCTF{welc0m3_t0_r3VeRs1nG}
+
+Reversing Warmup 2
+------------------
+Can you decode the following string dGg0dF93NHNfczFtcEwz from 
+base64 format to ASCII?
+
+echo dGg0dF93NHNfczFtcEwz | base64 -d
+
+picoCTF{th4t_w4s_s1mpl3}
+
+Crypto Warmup 1
+---------------
+Crypto can often be done by hand, here's a message you got from a friend
+llkjmlmpadkkc with the key of thisisalilkey. Can you use this table to
+solve it?
+
+The table kinda hurts my eyes...
+
+thisisalilkey
+llkjmlmpadkkc
+secretmessage
+
+picoCTF{SECRETMESSAGE}
+
+Crypto Warmup 2
+---------------
+Cyptography doesn't have to be complicated, have you ever heard of something
+called rot13? cvpbPGS{guvf_vf_pelcgb!}
+
+echo "cvpbPGS{guvf_vf_pelcgb\!}" | tr '[A-Za-z]' '[N-ZA-Mn-za-m]'
+
+picoCTF{this_is_crypto!}
+
+grep 1
+------
+Can you find the flag in file? This would be really obnoxious to look through by hand see
+if you can find a faster way.
+
+grep picoCTF file
+
+picoCTF{grep_and_you_will_find_d66382d8}
+
+===
+END NIGHT 1
+===
