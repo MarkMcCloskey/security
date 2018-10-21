@@ -105,3 +105,40 @@ picoCTF{grep_and_you_will_find_d66382d8}
 ===
 END NIGHT 1
 ===
+
+nat cat
+-------
+Using netcat (nc) will be a necessity throughout your adventure. Can you connect to 
+2018shell3.picoctf.com at port 22847 to get the flag?
+
+nc 2018shell3.picoctf.com 22847 
+picoCTF{NEtcat_iS_a_NEcESSiTy_69222dcc}
+
+Here's Johnny!
+--------------
+Okay, so we found some important looking files on a linux computer. Maybe they can be used to
+get a password to the process. Connect with nc 2018shell3.picoctf.com 40157.
+
+Files given were passwd and shadow
+
+cat passwd
+>root:x:0:0:root:/root:/bin/bashroot
+cat shadow
+>root:$6$IGI9prWh$ZHToiAnzeD1Swp.zQzJ/Gv.iViy39EmjVsg3nsZlfejvrAjhmp5jY.1N6aRbjFJVQX8hHmTh7Oly3NzogaH8c1:17770:0:99999:7:::
+unshadow passwd shadow > heresjohnny
+//use john the ripper
+john heresjohnny
+>password1
+nc 2018shell3.picoctf.com 40157
+Username: root
+Password: password1
+>picoCTF{J0hn_1$_R1pp3d_1b25af80}
+
+strings
+-------
+Can you find the flag in this file without actually running it?
+
+Given file named strings
+
+strings strings | grep picoCTF
+>picoCTF{sTrIngS_sAVeS_Time_3f712a28}
