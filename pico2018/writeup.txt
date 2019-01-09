@@ -142,3 +142,78 @@ Given file named strings
 
 strings strings | grep picoCTF
 >picoCTF{sTrIngS_sAVeS_Time_3f712a28}
+
+pipe
+----
+During your adventure you will likely encounter a situation where you need to process data that you receive
+over the network rather than through a file. Can you find a way to save the output from this program and
+search for the flag? Connect with 2018shell3.picoctf.com 48696
+
+nc 2018shell3.picoctf.com 48696 > pipe.txt
+cat pipe.txt | uniq | grep pico
+picoCTF{almost_like_mario_f617d1d7}
+
+Inspect Me
+----------
+Inspect this code! http://2018shell3.picoctf.com:28831
+
+Go to website, inspect, and find the html and javascript source.
+picoCTF{ur_4_real_1nspect0r_g4dget_b4887011}
+
+grep 2
+------
+This one is a little bit harder. Can you find the flag in /problems/grep-2_0_783d3e2c8ea2ebd3799ca6a5d28fc742/files on the shell server? Remember, grep is your friend.
+
+Navigate to directory
+grep -r pico
+picoCTF{grep_r_and_you_will_find_24c911ab}
+
+Aca-Shell-A
+-----------
+It's never a bad idea to brush up on those linux skills or even learn some new ones before you set off on 
+this adventure! Connect with nc 2018shell3.picoctf.com 33158
+
+This is a neat little game.
+cd secret
+rm in*
+echo Drop it in!
+cd ../executables
+./dontLookHere
+whoami
+cd ..
+cp /tmp/TopSecret passwords
+cat TopSecret
+picoCTF{CrUsHeD_It_9edaa84a}
+
+Client Side is Still Bad
+------------------------
+I forgot my password again, but this time there doesn't seem to be a reset, can you help me?
+http://2018shell3.picoctf.com:8249
+
+inspect the body -> picoCTF{client_is_bad_9117e9}
+
+Desrouleaux
+-----------
+Our network administrator is having some trouble handling the tickets for all of our incidents.
+Can you help him out by answering all the questions? Connect with nc 2018shell3.picoctf.com 14079
+
+Analyzing incidents.json
+
+What is the most common source IP address? 38.165.106.4
+How many unique destination IP addresses were targeted by the source IP 119.201.211.8? 2
+What is the number of unique destination IP's a file is sent, on average, to two decimal places? 1.67
+picoCTF{J4y_s0n_d3rUUUULo_4f3aae0d}
+
+Logon
+-----
+I made a website so now you can log on to! I don't seem to have the admin password. See if you can't get
+to the flag.
+
+So, you can login just by pressing enter but it gives you a page that says you're in but can't see the flag.
+I noticed they dropped a cookie that said admin was false. I changed it to true and reloaded the page.
+picoCTF{l0g1ns_ar3nt_r34l_a280e12c}
+
+Reading Between the Eyes
+------------------------
+Stego-Saurus hid a message for you in this image, can you retrieve it?
+
