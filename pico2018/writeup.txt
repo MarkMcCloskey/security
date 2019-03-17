@@ -217,3 +217,143 @@ Reading Between the Eyes
 ------------------------
 Stego-Saurus hid a message for you in this image, can you retrieve it?
 
+They hid a message in a png using least significant bit steganography. I did a google search for 
+online decoders and found one. Sadly it didn't want to work with google so I had to use firefox.
+
+https://stylesuxx.github.io/steganography/
+picoCTF{r34d1ng_b37w33n_7h3_by73s}
+
+Recovering From the Snap
+------------------------
+There used to be a bunch of animals here, what did Dr. Xernon do to them?
+
+Given a .dd file to explore. Typically these are disk images but let's check.
+
+file animals.dd -> DOS/MBR boot sector.
+Alrighty, let's drop it in Autopsy
+Deleted files -> theflag.jpg
+picoCTF{th3_5n4p_happ3n3d}
+
+admin panel
+-----------
+We captured some traffic logging into the admin panel, can you find the password?
+
+Given data.pcap -> Typically pcaps are packet captures. Usually need Wireshark but just in case...
+
+strings data.pcap | grep pico
+picoCTF{n0ts3cur3_894a6546}
+
+assembly-0
+----------
+What does asm0(0xd8, 0x7a) return?
+
+intro_asm_rev.s:
+.intel_syntax noprefix
+.bits 32
+	
+.global asm0
+
+asm0:
+	push	ebp			# Save old base pointer
+	mov	ebp,esp			# Store new base pointer
+	mov	eax,DWORD PTR [ebp+0x8] # Move first arg to eax
+	mov	ebx,DWORD PTR [ebp+0xc] # Move second arg to ebx
+	mov	eax,ebx			# Move second arg to eax= return second arg
+	mov	esp,ebp			# Return stack to before function call
+	pop	ebp			# Restore base pointer
+	ret
+
+So the function asm0 just returns the second argument meaning the flag for this is 0x7a.
+
+buffer overflow 0
+----------------
+Let's start off simple, can you overflow the right buffer in this program to get the flag?
+
+vuln.c:
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+
+#define FLAGSIZE_MAX 64
+
+char flag[FLAGSIZE_MAX];
+
+// Typically when buffer overflows are detected segmentation faults are thrown.
+// If I trigger a seg fault here, it will print the flag for me.
+void sigsegv_handler(int sig) {
+  fprintf(stderr, "%s\n", flag);
+  fflush(stderr);
+  exit(1);
+}
+
+// 16 byte buffer, strcpy doesn't do length checking and will copy as many bytes
+// onto the stack as I feed it. As long as I fill buf and then overflow the 
+// stack canary, I should trigger the seg fault.
+void vuln(char *input){
+  char buf[16];
+  strcpy(buf, input);
+}
+
+int main(int argc, char **argv){
+  
+  FILE *f = fopen("flag.txt","r");
+  if (f == NULL) {
+    printf("Flag File is Missing. Problem is Misconfigured, please contact an Admin if you are running this on the shell server.\n");
+    exit(0);
+  }
+  fgets(flag,FLAGSIZE_MAX,f);
+  signal(SIGSEGV, sigsegv_handler);
+  
+  gid_t gid = getegid();
+  setresgid(gid, gid, gid);
+  
+  if (argc > 1) {
+    vuln(argv[1]);
+    printf("Thanks! Received: %s", argv[1]);
+  }
+  else
+    printf("This program takes 1 argument.\n");
+  return 0;
+}
+
+So, run the program and feed it something like 16 bytes for the buffer and then 8 more to
+overwrite the canary should trigger the segfault/flag dump
+
+./vuln AAAAAAAAAAAAAAAAAAAAAAA
+picoCTF{ov3rfl0ws_ar3nt_that_bad_a54b012c}
+
+caesar cipher 1
+---------------
+This is one of the older ciphers in the books, can you decrypt the message?
+
+The Ceasar Cipher is typically just a character shift through the alphabet.
+
+I'll just use an online resource to help decode.
+
+https://cryptii.com/pipes/ceasar-cipher
+Input message cycle through shift until 20 looks like a possible decryption.
+picoCTF{justagoodoldcaesarcipherfwacbovv}
+
+environ
+-------
+Sometimes you have to configure environment variables before executing a program. 
+Can you find the flag we've hidden in an environment variable on the shell server?
+
+printenv
+picoCTF{eNv1r0nM3nT_v4r14Bl3_fL4g_3758492}
+
+hertz
+-----
+Here's another simple cipher for you where we made a bunch of substitutions. Can you decrypt it?
+
+The challenge name hertz leads you to think about frequency, character frequencies in English words
+are well known. E is the most common, let's see if that helps.
+
+Search for crypto frequency analysis online.
+https://quipquip.com
+picoCTF{substitution_ciphers_are_solvable_poounsvovg}
+
+hex editor
+---------
+This cat has a secret to teach you.
